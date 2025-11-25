@@ -1,0 +1,54 @@
+name: Deploy to Databricks
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install Databricks tools
+      run: pip install databricks-cli databricks-sdk pyyaml
+
+    - name: Configure Databricks host/token
+      run: |
+        mkdir -p ~/.databricks
+        cat > ~/.databricks/token <<EOF
+        DATABRICKS_HOST=${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN=${{ secrets.DATABRICKS_TOKEN }}
+        EOF
+      shell: bash
+
+    - name: Validate bundle (optional)
+      run: |
+        # If databricks bundle tooling is installed
+        echo "Skipping bundle validate (ensure local tooling installed when running locally)"
+    
+    - name: Deploy bundle (using databricks CLI / SDK)
+      env:
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      run: |
+        # Using databricks-cli and databricks-sdk as example commands
+        python - <<'PY'
+import os, subprocess, sys
+host = os.environ.get("DATABRICKS_HOST")
+token = os.environ.get("DATABRICKS_TOKEN")
+if not host or not token:
+    print("Missing host/token")
+    sys.exit(1)
+print("Deploy step would run here. In live course we use databricks-cli or databricks bundle tooling.")
+PY
+
+    - name: Trigger demo job (placeholder)
+      run: echo "Triggering demo job would happen here."
